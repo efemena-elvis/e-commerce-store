@@ -144,7 +144,7 @@ export default {
         currency: this.getCountry.currency,
         country: this.getCountry.code,
         narration: this.paymentDescription,
-        amount: this.getOrderSummary.subtotal,
+        amount: this.getOrderSummary.total,
         redirect_url: `${location.origin}/checkout-playground/history?description=${this.paymentDescription}`,
         method: "mobilemoney",
       };
