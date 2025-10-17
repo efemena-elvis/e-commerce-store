@@ -47,7 +47,7 @@
         <button
           class="btn btn-large btn-primary mgt-40 wt-100"
           ref="checkout"
-          @click="initiateZambiaPayment"
+          @click="initialize"
         >
           Checkout
         </button>
@@ -138,6 +138,17 @@ export default {
           : ["card"],
       };
     },
+
+    getPaymentPayload() {
+      return {
+        currency: this.getCountry.currency,
+        country: this.getCountry.code,
+        narration: this.paymentDescription,
+        amount: this.getOrderSummary.subtotal,
+        redirect_url: `${location.origin}/checkout-playground/history?description=${this.paymentDescription}`,
+        method: "mobilemoney",
+      };
+    },
   },
 
   methods: {
@@ -146,51 +157,42 @@ export default {
       initializeZambiaCheckout: "checkout/initializeZambiaCheckout",
     }),
 
+    // async initialize() {
+    //   console.log("payload", this.getPaymentPayload);
+    //   // this.initiateZambiaPayment();
+
+    //   // if (this.getCountry.name === "Zambia") this.initiateZambiaPayment();
+    //   // else {
+    //   //   try {
+    //   //     this.handleClick("checkout");
+    //   //     const res = await this.initializeCheckout(this.mockPaymentModule);
+    //   //     this.handleClick("checkout", "Checkout", false);
+
+    //   //     res.code === 200 && res?.data?.link
+    //   //       ? (location.href = res?.data?.link)
+    //   //       : this.pushToast(res.message, "warning");
+    //   //   } catch (err) {
+    //   //     this.pushToast("Order checkout failed", "error");
+    //   //     this.handleClick("checkout", "Checkout", false);
+    //   //   }
+    //   // }
+    // },
+
     async initialize() {
-      this.initiateZambiaPayment();
-
-      // if (this.getCountry.name === "Zambia") this.initiateZambiaPayment();
-      // else {
-      //   try {
-      //     this.handleClick("checkout");
-      //     const res = await this.initializeCheckout(this.mockPaymentModule);
-      //     this.handleClick("checkout", "Checkout", false);
-
-      //     res.code === 200 && res?.data?.link
-      //       ? (location.href = res?.data?.link)
-      //       : this.pushToast(res.message, "warning");
-      //   } catch (err) {
-      //     this.pushToast("Order checkout failed", "error");
-      //     this.handleClick("checkout", "Checkout", false);
-      //   }
-      // }
-    },
-
-    async initiateZambiaPayment() {
-      const requestPayload = {
-        currency: "ZMW",
-        country: "ZM",
-        narration: "payment for clothes",
-        method: "mobilemoney",
-        amount: this.getOrderSummary.subtotal,
-        redirect_url: "https://redstonepgs.com/",
-        customer: {
-          email: "",
-          first_name: "",
-          last_name: "",
-        },
-      };
-
       try {
         this.handleClick("checkout");
-        const res = await this.initializeZambiaCheckout(requestPayload);
+        const res = await this.initializeCheckout(this.getPaymentPayload);
         this.handleClick("checkout", "Checkout", false);
 
-        console.log("Checkout", res);
+        if (res.code === 200) {
+          this.createAndClickAnchor(res?.data?.payment_link, "_blank");
+        } else {
+          this.pushToast(res?.message ?? "Order checkout failed", "warning");
+        }
 
-        res.success === true && res?.data?.payment_link
-          ? this.createAndClickAnchor(res?.data?.payment_link, "_blank")
-          : this.pushToast(res?.message ?? "Order checkout failed", "warning");
+        // res.success === true && res?.data?.payment_link
+        //   ? this.createAndClickAnchor(res?.data?.payment_link, "_blank")
+        //   : this.pushToast(res?.message ?? "Order checkout failed", "warning");
       } catch (err) {
         this.pushToast("Order checkout failed", "error");
         this.handleClick("checkout", "Checkout", false);

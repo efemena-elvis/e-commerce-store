@@ -52,13 +52,13 @@ class serviceApi {
   // ===============================
   async push(
     url,
-    { payload = {}, resolve = true, is_attach = false, header_slug = null }
+    { payload = {}, resolve = true, is_attach = false, headers = {} }
   ) {
     try {
       let response = await axios.post(
         url,
         payload,
-        this.getHeaders(is_attach, header_slug)
+        this.getHeaders(is_attach, headers)
       );
       return resolve ? response.data : response;
     } catch (err) {
@@ -104,7 +104,7 @@ class serviceApi {
   // ===============================
   // SETUP REQUEST HEADERS
   // ===============================
-  getHeaders(attach = false, header_slug = null) {
+  getHeaders(attach = false, headers = {}) {
     const authUserToken = getStorage(VESICASH_AUTH_TOKEN) || null;
 
     return attach
@@ -122,7 +122,7 @@ class serviceApi {
             Authorization: `Bearer ${authUserToken}`,
             "V-PUBLIC-KEY": VESICASH_PUBLIC_KEY_TOKEN,
             "V-PRIVATE-KEY": VESICASH_PRIVATE_KEY_TOKEN,
-            "slug": header_slug,
+            ...headers,
           },
         };
   }
